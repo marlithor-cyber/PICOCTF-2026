@@ -1,0 +1,7 @@
+$ python3 solve.py
+[+] Loaded ciphertext: 34 bytes
+[+] Keyspace size: 256
+[+] Seed candidates tried: 163
+[+] Recovered seed: 162
+[+] Redacted flag: picoCTF{...redacted...}
+[+] Full flag saved locally to flag.txt

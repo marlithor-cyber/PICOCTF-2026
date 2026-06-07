@@ -1,0 +1,5 @@
+$ python3 solve.py
+[+] Loaded ciphertext
+[+] LFSR state size: 8 bits
+[+] Brute-forcing 256 possible seeds
+[+] Searching for plaintext starting with picoCTF{...redacted...}

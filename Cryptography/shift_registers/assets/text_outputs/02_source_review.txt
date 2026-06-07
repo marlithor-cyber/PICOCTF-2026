@@ -1,0 +1,8 @@
+$ cat chall.py
+key = bytes_to_long(get_random_bytes(126))
+lfsr = key & 0xFF
+
+feedback = b7 ^ b5 ^ b4 ^ b3
+lfsr = (feedback << 7) | (lfsr >> 1)
+
+output.append(p ^ ks)

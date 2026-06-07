@@ -1,0 +1,4 @@
+$ python3 solve.py
+[+] Matching seed found
+[+] Ciphertext decrypted successfully
+[+] Full flag saved locally to flag.txt

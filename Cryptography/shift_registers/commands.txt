@@ -1,0 +1,54 @@
+# Commands Used
+
+This challenge uses an 8-bit LFSR state, so the attack is:
+
+8-bit LFSR state -> brute force 256 seeds -> regenerate keystream -> XOR decrypt
+
+Formula:
+
+plaintext_byte = ciphertext_byte XOR lfsr_state
+
+Manual commands:
+
+```bash
+ls -la
+cat chall.py
+cat output.txt
+python3 solve.py
+python3 solve.py --show-flag
+./solve.sh
+```
+
+Minimal Python solving logic:
+
+```bash
+python3 - <<'PY'
+from pathlib import Path
+
+def steplfsr(lfsr):
+    b7 = (lfsr >> 7) & 1
+    b5 = (lfsr >> 5) & 1
+    b4 = (lfsr >> 4) & 1
+    b3 = (lfsr >> 3) & 1
+
+    feedback = b7 ^ b5 ^ b4 ^ b3
+    lfsr = (feedback << 7) | (lfsr >> 1)
+    return lfsr
+
+ct = bytes.fromhex(Path("output.txt").read_text().strip())
+prefix = ("picoCTF" + "{").encode()
+
+for seed in range(256):
+    lfsr = seed
+    pt = bytearray()
+
+    for c in ct:
+        lfsr = steplfsr(lfsr)
+        pt.append(c ^ lfsr)
+
+    if bytes(pt).startswith(prefix):
+        print(bytes(pt).decode())
+        print("seed =", seed)
+        break
+PY
+```
