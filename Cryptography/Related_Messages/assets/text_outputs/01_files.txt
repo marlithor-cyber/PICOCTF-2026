@@ -1,0 +1,3 @@
+$ ls -la
+-rw-r--r--  chall.py
+-rw-r--r--  output.txt

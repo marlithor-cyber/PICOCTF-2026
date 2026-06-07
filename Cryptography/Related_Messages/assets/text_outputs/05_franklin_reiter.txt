@@ -1,0 +1,7 @@
+$ sage solve.sage
+[+] e = 17
+[+] Building polynomials over Zmod(N)
+[+] f1(x) = x^e - c1
+[+] f2(x) = (x - diff)^e - c2
+[+] gcd degree = 1
+[+] Plaintext recovered

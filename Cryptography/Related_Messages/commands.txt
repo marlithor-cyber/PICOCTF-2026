@@ -1,0 +1,76 @@
+# Related Messages command reference
+
+Manual commands used while solving:
+
+```bash
+ls -la
+cat chall.py
+cat output.txt
+sage solve.sage
+python3 solve.py
+./solve.sh
+```
+
+Short command reference:
+
+```bash
+# Parse RSA values
+cat output.txt
+
+# Run Franklin-Reiter related message attack with SageMath
+sage solve.sage
+
+# Print redacted result / save flag locally
+python3 solve.py
+```
+
+Attack summary:
+
+```text
+same RSA modulus + same exponent + known linear relation between messages
+-> Franklin-Reiter related message attack
+-> polynomial GCD
+-> plaintext
+```
+
+The challenge gives two RSA encryptions made with the same modulus `N` and the
+same public exponent `e`. It also prints the difference between the two
+plaintext integers, so the messages have a known linear relationship.
+
+Important formulas:
+
+```text
+c1 = m^e mod N
+c2 = (m - diff)^e mod N
+f1(x) = x^e - c1
+f2(x) = (x - diff)^e - c2
+gcd(f1, f2) = x - m
+```
+
+Minimal Sage solving block:
+
+```bash
+sage - <<'SAGE'
+from Crypto.Util.number import long_to_bytes
+
+with open("output.txt") as f:
+    vals = [int(line.strip()) for line in f if line.strip()]
+
+c1, c2, diff, N = vals
+e = 0x11
+
+R.<x> = PolynomialRing(Zmod(N))
+f1 = x^e - c1
+f2 = (x - diff)^e - c2
+
+g = f1.gcd(f2)
+print("gcd degree =", g.degree())
+
+# If g = a*x + b, then root = -b/a mod N
+lc = g.leading_coefficient()
+const = g[0]
+m = int(-const / lc)
+
+print(long_to_bytes(m))
+SAGE
+```

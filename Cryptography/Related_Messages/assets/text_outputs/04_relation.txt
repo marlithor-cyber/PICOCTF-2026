@@ -1,0 +1,4 @@
+$ python3 solve.py
+[+] Parsed c1, c2, diff, N
+[+] diff = Message - Message_fixed = -3
+[+] Relation: Message_fixed = Message - diff

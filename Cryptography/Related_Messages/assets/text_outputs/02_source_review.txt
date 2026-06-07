@@ -1,0 +1,10 @@
+$ cat chall.py
+e = 0x11
+N = p*q
+
+ciphertext = pow(Message, e, N)
+ciphertext2 = pow(Message_fixed, e, N)
+
+print(ciphertext, ciphertext2)
+print(Message - Message_fixed)
+print(N)

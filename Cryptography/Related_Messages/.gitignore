@@ -1,0 +1,6 @@
+flag.txt
+recovered_m.txt
+*.sage.py
+__pycache__/
+*.pyc
+assets/text_outputs/*full*
