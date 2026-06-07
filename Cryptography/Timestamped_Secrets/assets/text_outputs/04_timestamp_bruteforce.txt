@@ -1,0 +1,4 @@
+$ python3 solve.py
+[+] Parsed timestamp hint: 1770242597
+[+] Brute-forcing timestamps around the hint
+[+] Trying window: +/- 10000 seconds

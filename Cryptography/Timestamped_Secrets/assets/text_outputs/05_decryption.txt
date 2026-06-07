@@ -1,0 +1,4 @@
+$ python3 solve.py
+[+] Matching plaintext found
+[+] AES key derived from recovered timestamp
+[+] Full flag saved locally to flag.txt

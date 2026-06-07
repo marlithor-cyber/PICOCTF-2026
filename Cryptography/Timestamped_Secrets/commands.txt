@@ -1,0 +1,50 @@
+# Timestamped Secrets manual commands
+
+These are the terminal commands used for the manual solve path:
+
+```bash
+ls -la
+cat encryption.py
+cat message.txt
+python3 solve.py
+python3 solve.py --show-flag
+```
+
+Minimal Python solving block:
+
+```bash
+python3 - <<'PY'
+import re
+from hashlib import sha256
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import unpad
+
+with open("message.txt", "r", encoding="utf-8") as f:
+    data = f.read()
+
+timestamp = int(re.search(r"around (\d+) UTC", data).group(1))
+ct_hex = re.search(r"Ciphertext \(hex\):\s*([0-9a-fA-F]+)", data).group(1)
+ciphertext = bytes.fromhex(ct_hex)
+
+for ts in range(timestamp - 10000, timestamp + 10001):
+    key = sha256(str(ts).encode()).digest()[:16]
+    cipher = AES.new(key, AES.MODE_ECB)
+    try:
+        pt = unpad(cipher.decrypt(ciphertext), AES.block_size)
+    except ValueError:
+        continue
+
+    if pt.startswith(b"picoCTF{"):
+        print(pt.decode())
+        print("timestamp =", ts)
+        break
+PY
+```
+
+The formula is:
+
+```text
+key = sha256(str(timestamp).encode()).digest()[:16]
+plaintext = AES_ECB_decrypt(ciphertext, key)
+timestamp is brute-forced around the leaked hint.
+```
