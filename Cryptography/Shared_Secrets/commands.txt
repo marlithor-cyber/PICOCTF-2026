@@ -1,0 +1,46 @@
+Manual commands used:
+
+```bash
+ls -la
+cat encryption.py
+cat message.txt
+python3 solve.py
+```
+
+Minimal manual Python solve command:
+
+```bash
+python3 - <<'PY'
+import re
+
+with open("message.txt", "r", encoding="utf-8") as f:
+    data = f.read()
+
+values = {}
+for line in data.splitlines():
+    if "=" in line:
+        k, v = line.split("=", 1)
+        values[k.strip()] = v.strip()
+
+p = int(values["p"])
+A = int(values["A"])
+b = int(values["b"])
+enc = bytes.fromhex(values["enc"])
+
+shared = pow(A, b, p)
+key = shared % 256
+flag = bytes([c ^ key for c in enc])
+
+print(flag.decode())
+PY
+```
+
+Formula:
+
+```text
+shared = pow(A, b, p)
+key = shared % 256
+flag = enc XOR key
+```
+
+Because `b` is leaked and `A` is public, the shared secret can be computed directly. The final key is the lowest byte of that shared secret, so each ciphertext byte is XORed with `key` to recover the original plaintext.

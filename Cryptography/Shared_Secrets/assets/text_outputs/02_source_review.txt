@@ -1,0 +1,7 @@
+$ cat encryption.py
+g = 2
+p = getPrime(1048)
+A = pow(g, a, p)
+b = '???'
+shared = pow(A, b, p)
+enc = bytes([x ^ (shared % 256) for x in flag])
