@@ -1,0 +1,5 @@
+flag.txt
+recovered_f.txt
+__pycache__/
+*.pyc
+assets/text_outputs/*full*

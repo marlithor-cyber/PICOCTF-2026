@@ -1,0 +1,45 @@
+# Not TRUe command reference
+
+Manual commands used:
+
+```bash
+ls -la
+cat encrypt.py
+cat public.txt
+sage solve.sage
+python3 solve.py
+./solve.sh
+```
+
+Short reference:
+
+```bash
+# Parse public parameters
+cat public.txt
+
+# Recover private polynomial using an NTRU lattice attack
+sage solve.sage
+
+# Decrypt ciphertext chunks and print redacted result
+python3 solve.py
+```
+
+Attack summary:
+
+```text
+public h + small ternary f,g -> NTRU lattice -> recover f -> decrypt ciphertext
+```
+
+Important formulas:
+
+```text
+h = p * f_q_inv * g mod q
+f*h = p*g mod q
+c = p*h*r + m mod q
+a = f*c mod q
+m = f_p_inv * a mod p
+```
+
+This is a toy CTF/lab instance. The attack works because `N = 48`, `q = 509`,
+and the private polynomials are very short. It does not imply that all NTRU
+parameter sets are broken.

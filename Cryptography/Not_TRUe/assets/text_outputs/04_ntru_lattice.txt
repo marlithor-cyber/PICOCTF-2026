@@ -1,0 +1,5 @@
+$ sage solve.sage
+[+] Parsed N=48, p=3, q=509
+[+] Building NTRU lattice
+[+] Lattice dimension: 96
+[+] Running LLL

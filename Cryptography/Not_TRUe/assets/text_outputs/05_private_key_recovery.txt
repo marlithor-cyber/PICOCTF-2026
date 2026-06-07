@@ -1,0 +1,4 @@
+$ sage solve.sage
+[+] Candidate short vector found
+[+] Recovered private polynomial f
+[+] f is invertible modulo p

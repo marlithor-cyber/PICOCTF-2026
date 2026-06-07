@@ -1,0 +1,4 @@
+$ python3 solve.py
+[+] Loaded recovered f
+[+] Decrypted ciphertext chunks
+[+] Full flag saved locally to flag.txt

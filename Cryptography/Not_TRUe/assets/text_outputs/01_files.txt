@@ -1,0 +1,3 @@
+$ ls -la
+-rw-r--r--  encrypt.py
+-rw-r--r--  public.txt

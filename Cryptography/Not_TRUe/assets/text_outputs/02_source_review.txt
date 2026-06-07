@@ -1,0 +1,7 @@
+$ cat encrypt.py
+N = 48
+p = 3
+q = 509
+
+h = p*(f_q_inv*g)
+c = p*(h*r) + m
