@@ -1,0 +1,42 @@
+# Small Trouble command reference
+
+Manual commands used while solving:
+
+```bash
+ls -la
+cat encryption.py
+cat message.txt
+sage solve.sage
+python3 solve.py
+./solve.sh
+```
+
+Short command reference:
+
+```bash
+# Parse public RSA values
+cat message.txt
+
+# Run Boneh-Durfee attack with SageMath
+sage solve.sage
+
+# Decrypt with recovered d
+python3 solve.py
+```
+
+Attack summary:
+
+The challenge uses RSA with a normal-looking public modulus, but the private exponent is intentionally too small.
+
+```text
+small d -> Boneh-Durfee -> recover d -> RSA decrypt
+```
+
+Important formulas:
+
+```text
+e*d ≡ 1 mod phi(n)
+m = pow(c, d, n)
+```
+
+In this CTF/lab challenge, `d` is generated as a 256-bit prime while `n` is about 2096 bits. That size relationship makes the private exponent small enough for a small private exponent attack. Once `d` is recovered, RSA decryption is standard.
