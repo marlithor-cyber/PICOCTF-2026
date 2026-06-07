@@ -1,0 +1,3 @@
+$ ls -la
+-rw-r--r--  image.jpg
+-rw-r--r--  flag.enc

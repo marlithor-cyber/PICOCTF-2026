@@ -1,0 +1,3 @@
+$ exiftool image.jpg
+File Name                       : image.jpg
+Comment                         : 2d2d2d2d2d424547494e2050524956415445204b45592d2d2d2d2d0a4d49494576414942...

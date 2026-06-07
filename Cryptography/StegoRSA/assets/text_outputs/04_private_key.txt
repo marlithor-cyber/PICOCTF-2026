@@ -1,0 +1,3 @@
+$ head private.pem
+-----BEGIN PRIVATE KEY-----
+MIIE...

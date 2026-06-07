@@ -1,0 +1,3 @@
+$ openssl pkeyutl -decrypt -inkey private.pem -in flag.enc -out flag.txt
+$ echo "decryption successful"
+decryption successful

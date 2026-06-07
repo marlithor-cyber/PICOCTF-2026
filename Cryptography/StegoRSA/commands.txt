@@ -1,0 +1,8 @@
+ls -la
+file image.jpg
+exiftool image.jpg
+exiftool -s3 -Comment image.jpg > key.hex
+xxd -r -p key.hex > private.pem
+head private.pem
+openssl pkeyutl -decrypt -inkey private.pem -in flag.enc -out flag.txt
+cat flag.txt

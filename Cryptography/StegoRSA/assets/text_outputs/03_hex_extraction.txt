@@ -1,0 +1,2 @@
+$ exiftool -s3 -Comment image.jpg > key.hex
+$ xxd -r -p key.hex > private.pem
