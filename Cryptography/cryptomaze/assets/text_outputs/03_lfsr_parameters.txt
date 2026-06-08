@@ -1,0 +1,5 @@
+$ python3 solve.py
+[+] Loaded LFSR state
+[+] State length: 64 bits
+[+] Taps: [63, 61, 60, 58]
+[+] Target key stream length: 128 bits

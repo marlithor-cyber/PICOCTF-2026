@@ -1,0 +1,10 @@
+$ python3 solve.py
+[+] Loaded output file: output.txt
+[+] State length: 64 bits
+[+] Taps: [63, 61, 60, 58]
+[+] Ciphertext length: 48 bytes
+[+] Generated key length: 16 bytes
+[+] LFSR conventions tried: 3
+[+] Successful convention: output before shift from state[0]; shift left, append feedback; direct taps
+[+] Redacted flag: picoCTF{...redacted...}
+[+] Full flag saved locally to flag.txt

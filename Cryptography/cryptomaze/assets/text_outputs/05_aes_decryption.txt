@@ -1,0 +1,5 @@
+$ python3 solve.py
+[+] Converted ciphertext from hex to bytes
+[+] Decrypting with AES-ECB
+[+] Valid plaintext found
+[+] Full flag saved locally to flag.txt

@@ -1,0 +1,7 @@
+$ cat output.txt
+LFSR Initial State:
+[0, 0, 1, 0, 0, 1, 0, 1, ...]
+LFSR Taps:
+[63, 61, 60, 58]
+Encrypted Flag:
+8f0e6d0f5b0dc1db201948b9e0cebd8f...

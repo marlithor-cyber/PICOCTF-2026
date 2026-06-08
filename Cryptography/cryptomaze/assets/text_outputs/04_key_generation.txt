@@ -1,0 +1,4 @@
+$ python3 solve.py
+[+] Generating 128 LFSR bits
+[+] Grouping bits into 16 bytes
+[+] AES-128 key candidate built

@@ -1,0 +1,78 @@
+# cryptomaze commands
+
+Manual commands used:
+
+```bash
+ls -la
+cat output.txt
+python3 solve.py
+python3 solve.py --show-flag
+./solve.sh
+```
+
+Short explanation:
+
+```text
+LFSR initial state + taps -> 128 bits -> 16-byte AES key -> AES-ECB decrypt
+```
+
+Useful formulas:
+
+```text
+feedback = XOR(state[tap] for tap in taps)
+key = bits_to_bytes(lfsr_output_bits[:128])
+plaintext = AES_ECB_decrypt(ciphertext, key)
+```
+
+Minimal Python solving logic:
+
+```bash
+python3 - <<'PY'
+import ast
+import re
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import unpad
+
+data = open("output.txt", "r", encoding="utf-8").read()
+
+state = ast.literal_eval(re.search(r"LFSR Initial State:\s*\n(\[.*?\])", data, re.S).group(1))
+taps = ast.literal_eval(re.search(r"LFSR Taps:\s*\n(\[.*?\])", data, re.S).group(1))
+ct_hex = re.search(r"Encrypted Flag:\s*\n([0-9a-fA-F]+)", data).group(1)
+ciphertext = bytes.fromhex(ct_hex)
+flag_prefix = ("picoCTF" + "{").encode()
+
+def bits_to_key(bits):
+    out = bytearray()
+    for i in range(0, 128, 8):
+        out.append(int("".join(map(str, bits[i:i+8])), 2))
+    return bytes(out)
+
+def generate_bits_default(initial_state, taps, nbits=128):
+    s = initial_state[:]
+    bits = []
+    for _ in range(nbits):
+        out = s[0]
+        feedback = 0
+        for t in taps:
+            feedback ^= s[t]
+        s = s[1:] + [feedback]
+        bits.append(out)
+    return bits
+
+bits = generate_bits_default(state, taps)
+key = bits_to_key(bits)
+
+cipher = AES.new(key, AES.MODE_ECB)
+pt = cipher.decrypt(ciphertext)
+
+try:
+    pt = unpad(pt, AES.block_size)
+except ValueError:
+    pass
+
+if pt.startswith(flag_prefix):
+    print(pt.decode(errors="replace"))
+else:
+    print("Default convention did not produce a valid flag prefix; use solve.py for automatic convention search.")
+PY
+```
