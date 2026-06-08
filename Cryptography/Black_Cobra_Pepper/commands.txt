@@ -1,0 +1,52 @@
+# Black Cobra Pepper commands
+
+Manual commands used:
+
+```bash
+ls -la
+cat chall.py
+cat output.txt
+python3 solve.py
+python3 solve.py --show-flag
+./solve.sh
+```
+
+Minimal solving explanation:
+
+```text
+Known:
+P1 = randomdata1111111
+C1 = encryption of P1
+C2 = encryption of flag
+
+Because the cipher is linear:
+C1 = F(P1) XOR mask
+C2 = F(flag) XOR mask
+
+Therefore:
+mask = C1 XOR F(P1)
+F(flag) = C2 XOR mask
+flag = F_inverse(C2 XOR mask)
+```
+
+Formulas:
+
+```text
+C_known = F(P_known) XOR mask
+C_flag = F(P_flag) XOR mask
+mask = C_known XOR F(P_known)
+F(P_flag) = C_flag XOR mask
+P_flag = F_inverse(F(P_flag))
+```
+
+Notes:
+
+```text
+F is the zero-key version of the custom AES-like encryption:
+  rounds 1..9: ShiftRows, MixColumns
+  final round: ShiftRows
+
+SubBytes is skipped because sub_bytes(state) returns state unchanged.
+The key schedule is also linear because sub_word(word) and rcon(word)
+return word unchanged.
+```

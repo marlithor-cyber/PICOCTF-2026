@@ -1,0 +1,5 @@
+$ python3 solve.py
+[+] sub_bytes is identity
+[+] sub_word is identity
+[+] rcon is identity
+[+] The cipher is now linear over GF(2)

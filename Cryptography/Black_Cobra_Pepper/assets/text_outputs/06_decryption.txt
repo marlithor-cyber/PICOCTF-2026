@@ -1,0 +1,4 @@
+$ python3 solve.py
+[+] Applying inverse zero-key transform
+[+] Flag block recovered
+[+] Full flag saved locally to flag.txt

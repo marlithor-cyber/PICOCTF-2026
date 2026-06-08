@@ -1,0 +1,5 @@
+$ python3 solve.py
+[+] Known plaintext: randomdata1111111
+[+] Computing F(known_plaintext) with zero key
+[+] Recovering key-dependent mask
+[+] Removing mask from flag ciphertext

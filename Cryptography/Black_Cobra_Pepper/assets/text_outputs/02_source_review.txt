@@ -1,0 +1,13 @@
+$ cat chall.py
+def sub_word(word):
+    return word
+
+def rcon(word):
+    return word
+
+def sub_bytes(state):
+    return state
+
+pt1 = "72616e646f6d64617461313131313131"
+print(AES(pt1, key))
+print(AES(flag, key))
