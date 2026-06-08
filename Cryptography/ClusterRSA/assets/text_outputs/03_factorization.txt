@@ -1,0 +1,5 @@
+$ python3 solve.py
+[+] Loaded n, e, ct
+[+] Factoring n
+[+] Prime factors found: 4
+[+] This is multi-prime RSA

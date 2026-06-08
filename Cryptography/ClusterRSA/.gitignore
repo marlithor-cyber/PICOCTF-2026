@@ -1,0 +1,4 @@
+flag.txt
+__pycache__/
+*.pyc
+assets/text_outputs/*full*

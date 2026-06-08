@@ -1,0 +1,54 @@
+# ClusterRSA command reference
+
+Manual commands used while solving:
+
+```bash
+ls -la
+cat message.txt
+python3 solve.py
+python3 solve.py --show-flag
+./solve.sh
+```
+
+Short explanation:
+
+```text
+factor n -> compute phi over all primes -> compute d -> decrypt ct
+```
+
+Important formulas:
+
+```text
+n = p1 * p2 * ... * pk
+phi(n) = product(p_i - 1)
+d = inverse(e, phi(n))
+m = pow(ct, d, n)
+```
+
+Minimal Python solving logic:
+
+```bash
+python3 - <<'PY'
+from math import prod
+from sympy import factorint, mod_inverse
+
+n = 8749002899132047699790752490331099938058737706735201354674975134719667510377522805717156720453193651
+e = 65537
+ct = 2630159242114455882250729812770100011736485763047361297871782218963814793905003742546116295910618429
+
+factors = factorint(n)
+phi = prod((p - 1) * (p ** (exp - 1)) for p, exp in factors.items())
+
+d = int(mod_inverse(e, phi))
+m = pow(ct, d, n)
+flag = m.to_bytes((m.bit_length() + 7) // 8, "big")
+
+print(flag.decode())
+PY
+```
+
+For the public writeup and screenshots, the recovered flag is redacted:
+
+```text
+picoCTF{...redacted...}
+```

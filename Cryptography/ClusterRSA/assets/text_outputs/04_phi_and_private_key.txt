@@ -1,0 +1,4 @@
+$ python3 solve.py
+[+] Computing phi(n) = product(p_i - 1)
+[+] Computing d = inverse(e, phi)
+[+] Private exponent recovered
