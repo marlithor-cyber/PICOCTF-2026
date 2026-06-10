@@ -243,7 +243,7 @@ Output:
 
 ```text
 attempt 1 failed, retrying
-picoCTF{n0t_so_s3cure_.x_w1th_sh@512_b940fabf}
+picoCTF{......redacted.....}
 ```
 
 ---
