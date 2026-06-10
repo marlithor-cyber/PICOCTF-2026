@@ -24,7 +24,7 @@ iv, ciphertext = encrypt_flag(flag, key)
 
 The encryption routine is straightforward:
 
-![encrypt\_flag](assets/encrypt_flag.png)
+![encrypt\_flag](assets/function1.png)
 
 The key part of the challenge is the `SecureDotProductService`. It stores the AES key as a list of integers:
 
@@ -46,7 +46,7 @@ These trusted vectors are printed to the user together with their hashes.
 
 Each trusted vector is authenticated using the following function:
 
-![hash\_vector](assets/hash_vector.png)
+![hash\_vector](assets/function2.png)
 
 The server computes:
 
@@ -74,7 +74,7 @@ vector_encoding = vector[1:-1].encode('latin-1')
 
 For parsing, the service sanitizes the input and keeps only digits, commas, and brackets:
 
-![parse\_vector](assets/parse_vector.png)
+![parse\_vector](assets/function3.png)
 
 This means the data used for validation is not exactly the same as the data used for computation.
 
@@ -134,7 +134,7 @@ original_vector || SHA512_padding || extra_coordinates
 
 The service prints trusted vectors and hashes:
 
-![trusted\_check](assets/trusted_check.png)
+![trusted\_check](assets/function4.png)
 
 During interaction, the server asks for:
 
@@ -163,7 +163,7 @@ This gives us controlled extra dimensions in the dot product.
 
 The dangerous oracle is here:
 
-![dot\_product](assets/dot_product.png)
+![dot\_product](assets/function5.png)
 
 The function computes:
 
