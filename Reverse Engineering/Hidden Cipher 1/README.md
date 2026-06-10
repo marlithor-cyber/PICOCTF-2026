@@ -10,17 +10,15 @@
 
 The challenge gives us a binary called `hiddencipher` and a local `flag.txt`.
 
-The description says that the flag is slightly encrypted and that we need to figure out the cipher and the key.
+The goal is to understand how the binary encrypts the flag, recover the key, and then use that knowledge to decrypt the real encrypted flag from the remote service.
 
-We can also connect to the remote service using netcat:
+Remote service:
 
 ```bash
 nc candy-mountain.picoctf.net 50326
 ```
 
 ![Challenge](assets/challenge.png)
-
-The local `flag.txt` only contains a fake flag, so I used it to understand and verify the encryption logic locally before attacking the remote service.
 
 ---
 
@@ -34,21 +32,21 @@ file hiddencipher flag.txt
 strings hiddencipher | grep -iE "upx|flag|secret|encrypted|failed|%02x"
 ```
 
-The binary was detected as a 64-bit ELF:
+The binary is a 64-bit ELF:
 
 ```text
 hiddencipher: ELF 64-bit LSB pie executable, x86-64, statically linked, no section header
 ```
 
-The interesting part is:
+The important part is:
 
 ```text
 no section header
 ```
 
-This usually makes static analysis harder because normal sections and symbols are not easily available.
+This makes static analysis harder because the binary does not expose normal section information.
 
-The strings output also showed several UPX indicators:
+The `strings` output also shows several useful clues:
 
 ```text
 UPX!
@@ -57,15 +55,15 @@ flag.txt
 $Info: This file is packed with the UPX executable packer
 ```
 
-![Recon](assets/recon.png)
+![Initial recon](assets/recon.png)
 
-So the first important discovery was that the binary is packed with UPX.
+So the binary is packed with UPX, and it also references `flag.txt` and `%02x`, which suggests that it reads the flag and prints encrypted bytes as hexadecimal.
 
 ---
 
 ## Unpacking the Binary
 
-Since the binary was packed with UPX, I unpacked it using:
+Since the binary is packed with UPX, I unpacked it using:
 
 ```bash
 upx -d hiddencipher -o hiddencipher_unpacked
@@ -78,9 +76,9 @@ UPX successfully unpacked the file:
 Unpacked 1 file.
 ```
 
-![Unpacking](assets/unpack.png)
+![UPX unpack](assets/unpack.png)
 
-After unpacking, the binary became much easier to analyze.
+After unpacking, the binary becomes much easier to analyze.
 
 ---
 
@@ -100,7 +98,7 @@ The unpacked file is now a normal dynamically linked ELF:
 ELF 64-bit LSB pie executable, x86-64, dynamically linked, not stripped
 ```
 
-The strings became more useful:
+The useful strings are now clearer:
 
 ```text
 flag.txt
@@ -110,7 +108,7 @@ Here your encrypted flag:
 get_secret
 ```
 
-The symbols also revealed two important functions:
+The symbols reveal two important functions:
 
 ```text
 00000000000012a9 T get_secret
@@ -121,20 +119,20 @@ The symbols also revealed two important functions:
 
 At this point, the reversing path is clear:
 
-* `get_secret` probably creates or returns the key.
-* `main` probably reads `flag.txt`, encrypts it, and prints the encrypted result.
+* `get_secret` probably builds or returns the encryption key.
+* `main` probably reads `flag.txt`, encrypts it, and prints the encrypted output.
 
 ---
 
 ## Analyzing `get_secret`
 
-I disassembled the `get_secret` function:
+I disassembled `get_secret`:
 
 ```bash
 objdump -d -Mintel hiddencipher_unpacked | grep -A70 '<get_secret>'
 ```
 
-The function writes several bytes into memory:
+The function writes several hardcoded bytes into memory:
 
 ```asm
 12b1: mov BYTE PTR [rip+0x2d59],0x53
@@ -146,7 +144,7 @@ The function writes several bytes into memory:
 12db: mov BYTE PTR [rip+0x2d35],0x0
 ```
 
-![get\_secret objdump](assets/odjump.png)
+![get\_secret objdump](assets/odjump_get_secret.png)
 
 These bytes are:
 
@@ -160,13 +158,9 @@ Converting them from hex to ASCII gives:
 S3Cr3t
 ```
 
-I also confirmed this in CyberChef using:
+I confirmed this using CyberChef with the `From Hex` operation.
 
-```text
-From Hex
-```
-
-![CyberChef key conversion](assets/cyberchef.png)
+![Key in CyberChef](assets/key_cyberchef.png)
 
 So the secret key is:
 
@@ -178,9 +172,9 @@ S3Cr3t
 
 ## Ghidra Confirmation: `get_secret`
 
-To make the logic easier to read, I opened the unpacked binary in Ghidra.
+I also opened the unpacked binary in Ghidra.
 
-The decompiled `get_secret()` function confirms the same thing:
+The decompiled `get_secret()` function confirms the same result:
 
 ```c
 s.0._0_1_ = 0x53;
@@ -193,9 +187,9 @@ s.0._6_1_ = 0;
 return &s.0;
 ```
 
-![Ghidra get\_secret](assets/get_secret.png)
+![Ghidra get\_secret](assets/ghidra_get_secret.png)
 
-This confirms that the program builds the key byte by byte.
+So `get_secret()` builds the key byte by byte and returns it.
 
 The key is:
 
@@ -219,18 +213,19 @@ Then it reads the file content:
 
 ```asm
 13ba: call fread@plt
+13c6: call fclose@plt
 ```
 
-After that, it calls `get_secret`:
+After reading the flag, it calls `get_secret`:
 
 ```asm
 13d9: call 12a9 <get_secret>
 13de: mov QWORD PTR [rbp-0x8],rax
 ```
 
-![Main part 1](assets/odjump1.png)
+![Main analysis part 1](assets/odjump_main_1.png)
 
-The most important part is the encryption loop:
+The important encryption logic is here:
 
 ```asm
 1407: movzx esi,BYTE PTR [rax]
@@ -245,29 +240,29 @@ The most important part is the encryption loop:
 146d: jg 13fa <main+0x10f>
 ```
 
-![Main XOR loop](assets/odjump2.png)
+![Main analysis part 2](assets/odjump_main_2.png)
 
-This tells us that the program:
+This means the program:
 
-1. Reads one byte from the flag.
-2. Reads one byte from the secret key.
+1. Takes one byte from the flag.
+2. Takes one byte from the key.
 3. XORs them together.
-4. Prints the encrypted byte using `%02x`.
-5. Repeats this for the entire flag.
+4. Prints the result as hexadecimal using `%02x`.
+5. Repeats until the whole flag is processed.
 
 ---
 
 ## Ghidra Confirmation: `main`
 
-The Ghidra decompiler makes the logic much clearer.
+Ghidra makes the logic much easier to read.
 
-The program first opens the local flag file:
+The program opens the flag file:
 
 ```c
 __stream = fopen("flag.txt","rb");
 ```
 
-Then it reads the file and calls `get_secret()`:
+Then it calls `get_secret()`:
 
 ```c
 puVar2 = get_secret();
@@ -284,29 +279,35 @@ for (local_2c = 0; (long)local_2c < (long)__n; local_2c = local_2c + 1) {
 }
 ```
 
-![Ghidra main](assets/ghidra.png)
+![Ghidra main](assets/ghidra_main.png)
 
-The `local_2c % 6` part means the key is reused every 6 bytes.
+The key part is:
 
-That makes sense because:
+```c
+local_2c % 6
+```
+
+This means the key is repeated every 6 bytes.
+
+Since:
 
 ```text
 len("S3Cr3t") = 6
 ```
 
-So the encryption is repeating-key XOR:
+The encryption is repeating-key XOR:
 
 ```text
 cipher[i] = flag[i] XOR key[i % 6]
 ```
 
-Where:
+With:
 
 ```text
 key = S3Cr3t
 ```
 
-Since XOR is reversible, decryption is the same operation:
+Because XOR is reversible, decryption is the same operation:
 
 ```text
 flag[i] = cipher[i] XOR key[i % 6]
@@ -316,7 +317,7 @@ flag[i] = cipher[i] XOR key[i % 6]
 
 ## Local Verification
 
-Before attacking the remote service, I tested the logic locally.
+Before attacking the remote service, I verified the logic locally.
 
 Running the unpacked binary with the provided fake `flag.txt` gives:
 
@@ -331,9 +332,7 @@ Here your encrypted flag:
 235a201d70201548251358110c552f135409
 ```
 
-![Local encrypted output](assets/exploit_local.png)
-
-To verify the reversing result, I decrypted that local ciphertext in CyberChef.
+Then I decrypted the local ciphertext in CyberChef.
 
 Recipe:
 
@@ -360,7 +359,7 @@ The output was:
 picoCTF{fake_flag}
 ```
 
-![Local CyberChef verification](assets/exploit_local.png)
+![Local decrypt](assets/local_decrypt.png)
 
 This confirms that the binary encrypts the flag using repeating-key XOR with the key `S3Cr3t`.
 
@@ -374,14 +373,12 @@ Now that the encryption logic is understood, I connected to the remote service:
 nc candy-mountain.picoctf.net 50326
 ```
 
-The remote service printed an encrypted flag:
+The remote service printed a real encrypted flag:
 
 ```text
 Here your encrypted flag:
 235a201d702015483b1d412b265d3313501f0c072d135f0d2002302d0a406a0a701756102e
 ```
-
-![Remote output](assets/exploit.png)
 
 I decrypted it using the same CyberChef recipe:
 
@@ -399,12 +396,12 @@ S3Cr3t
 The decrypted output was:
 
 ```text
-picoCTF{xor_unpack_4nalys1s_94993eed}
+picoCTF{...redacted...}
 ```
 
-![Remote decrypt](assets/exploit.png)
+![Remote decrypt](assets/remote_decrypt.png)
 
-Challenge hacked.
+Challenge pwned.
 
 ---
 
@@ -418,35 +415,34 @@ picoCTF{xor_unpack_4nalys1s_94993eed}
 
 ## Why This Works
 
-The binary does not directly print the flag.
+The binary does not print the flag directly.
 
-Instead, it reads `flag.txt`, encrypts it with a repeating XOR key, and prints the encrypted bytes as hexadecimal.
+Instead, it:
 
-The key is not hidden very strongly. After unpacking the binary, the `get_secret()` function clearly constructs it byte by byte:
+1. Reads `flag.txt`.
+2. Builds the secret key using `get_secret()`.
+3. XORs every flag byte with the repeating key.
+4. Prints the result as hexadecimal.
+
+The key is built from these bytes:
 
 ```text
 53 33 43 72 33 74
 ```
 
-Which is:
+Which decode to:
 
 ```text
 S3Cr3t
 ```
 
-The encryption loop uses:
+The encryption is:
 
 ```text
-flag_byte XOR key_byte
+cipher[i] = flag[i] XOR key[i % 6]
 ```
 
-and prints the result with:
-
-```c
-printf("%02x", encrypted_byte);
-```
-
-Because XOR is reversible, applying the same key again decrypts the ciphertext.
+Since XOR is reversible, applying the same key again decrypts the ciphertext.
 
 ---
 
@@ -465,13 +461,13 @@ Because XOR is reversible, applying the same key again decrypts the ciphertext.
 
 ## Key Takeaways
 
-* Packed binaries should be checked with `strings` and unpacked if possible.
-* UPX-packed binaries can often be unpacked with `upx -d`.
-* `nm` is very useful when symbols are not stripped.
-* `get_secret` revealed the encryption key.
-* The encryption was repeating-key XOR.
-* `%02x` showed that the encrypted bytes were printed as hexadecimal.
-* XOR encryption can be reversed by applying the same key again.
+* UPX-packed binaries should be unpacked before deeper analysis.
+* `strings` can quickly reveal packers and useful clues.
+* `nm` is useful when symbols are not stripped.
+* `get_secret` revealed the XOR key.
+* `%02x` showed that encrypted bytes are printed as hex.
+* Repeating-key XOR can be reversed by applying the same key again.
+* Verifying locally with the fake flag makes the remote solve straightforward.
 
 ---
 
@@ -479,15 +475,10 @@ Because XOR is reversible, applying the same key again decrypts the ciphertext.
 
 This was a clean reverse engineering challenge.
 
-The main trick was not guessing the flag, but understanding how the program transformed it.
+The main trick was not guessing the flag, but understanding how the binary transformed it.
 
-Once the binary was unpacked, the logic became straightforward:
+After unpacking the binary, the `get_secret` function revealed the key `S3Cr3t`, and the `main` function showed that the flag was encrypted using repeating-key XOR.
 
-1. Read `flag.txt`.
-2. Build the key `S3Cr3t`.
-3. XOR each flag byte with the repeating key.
-4. Print the result as hex.
-
-After verifying the logic locally with the fake flag, the same CyberChef recipe was enough to decrypt the real remote output and recover the flag.
+Once the logic was verified locally with the fake flag, the same CyberChef recipe decrypted the remote output and revealed the real flag.
 
 Pwned.
