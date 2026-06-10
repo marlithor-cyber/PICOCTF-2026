@@ -403,7 +403,7 @@ S3Cr3t
 The decrypted output was:
 
 ```text
-picoCTF{xor_unpack_4nalys1s_94993eed}
+picoCTF{...redacted...}
 ```
 
 ![Remote decrypt](assets/exploit.png)
