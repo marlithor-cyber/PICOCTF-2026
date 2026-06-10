@@ -1,3 +1,197 @@
+# Secure Dot Product
+
+**Category:** Cryptography
+**Difficulty:** Hard
+
+## Description
+
+The challenge provides:
+
+* An AES-CBC encrypted flag
+* The IV
+* A "Secure Dot Product Service"
+
+The service stores the AES key as a vector of 32 bytes and allows users to compute dot products with supposedly trusted vectors.
+
+Our goal is to recover the AES key and decrypt the ciphertext.
+
+---
+
+## Source Code Analysis
+
+The service generates five trusted vectors:
+
+```python
+trusted_vectors.append(
+    (vector, self.hash_vector(str(vector)))
+)
+```
+
+Each trusted vector is protected using:
+
+```python
+hashlib.sha512(
+    self.salt + vector_encoding
+)
+```
+
+The server only computes dot products for vectors whose hash matches.
+
+At first glance this seems secure because the salt is secret.
+
+---
+
+## The Bug
+
+The application hashes one representation of the vector and parses another.
+
+### Hashing
+
+```python
+vector_encoding = vector[1:-1].encode('latin-1')
+```
+
+### Parsing
+
+```python
+sanitized = "".join(
+    c if c in '0123456789,[]'
+    else ''
+    for c in vector
+)
+```
+
+This difference creates an opportunity for a SHA512 length extension attack.
+
+---
+
+## SHA512 Length Extension
+
+The service authenticates vectors using:
+
+```text
+SHA512(secret || message)
+```
+
+instead of:
+
+```text
+HMAC(secret, message)
+```
+
+Because SHA512 is vulnerable to length extension, we can transform:
+
+```text
+SHA512(secret || message)
+```
+
+into:
+
+```text
+SHA512(secret || message || padding || extra)
+```
+
+without knowing the secret salt.
+
+This allows us to forge new trusted vectors.
+
+---
+
+## Forging Trusted Vectors
+
+Using a known trusted vector:
+
+```text
+[v1,v2,v3,...]
+```
+
+we append:
+
+```text
+SHA512_PADDING || extra_coordinates
+```
+
+and generate a valid hash.
+
+The server accepts the forged vector because the hash verification succeeds.
+
+After sanitization, the additional coordinates become part of the parsed vector.
+
+This gives us control over new dimensions in the dot product.
+
+---
+
+## Recovering the AES Key
+
+The oracle computes:
+
+```text
+dot(vector, key)
+```
+
+If we submit:
+
+```text
+[trusted_vector + 0,0,0,0]
+```
+
+and then:
+
+```text
+[trusted_vector + 0,1,0,0]
+```
+
+the difference between the two results directly reveals one byte of the AES key.
+
+Repeating the process leaks the unknown bytes.
+
+The remaining bytes are recovered by solving a system of linear equations generated from the trusted vectors.
+
+---
+
+## Decrypting the Flag
+
+Once all 32 bytes of the AES key are recovered:
+
+```python
+cipher = AES.new(key, AES.MODE_CBC, iv)
+plaintext = unpad(cipher.decrypt(ciphertext), 16)
+```
+
+The decrypted plaintext reveals the flag.
+
+---
+
+## Exploit
+
+```bash
+python3 solve.py --host lonely-island.picoctf.net --port 52025
+```
+
+Output:
+
+```text
+attempt 1 failed, retrying
+picoCTF{n0t_so_s3cure_.x_w1th_sh@512_b940fabf}
+```
+
+---
+
+## Flag
+
+```text
+picoCTF{n0t_so_s3cure_.x_w1th_sh@512_b940fabf}
+```
+
+---
+
+## Lessons Learned
+
+* Never authenticate data using `SHA512(secret || message)`.
+* Use HMAC instead.
+* Parsing and validation must operate on the exact same data.
+* Linear algebra oracles can leak cryptographic secrets.
+* Small parser inconsistencies often lead to complete compromise.
 # Hidden Cipher 2
 
 **Category:** Reverse Engineering
