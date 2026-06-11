@@ -20,7 +20,7 @@ The hints are important:
 The challenge strongly suggests that the binary uses runtime behavior, comparison APIs, and possibly network APIs. Instead of directly finding the flag in the first binary, we need to inspect how the program is structured.
 
 ---
-
+![Challenge](assets/challenge.png)
 ## Initial Setup
 
 The downloaded archive was protected with the password:
