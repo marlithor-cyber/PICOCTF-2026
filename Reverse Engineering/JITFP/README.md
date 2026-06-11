@@ -23,7 +23,7 @@ The hints are important:
 3. The extracted flag is in standard picoCTF flag format.
 
 ---
-
+![Challenge](assets/Challenge.png)
 ## Remote Recon
 
 I started by connecting to the remote host and running the binary.
@@ -37,7 +37,6 @@ ls
 
 The program expects one argument and rejects an incorrect flag.
 
-![Remote recon](assets/terminal\(1\).png)
 
 Then I copied the binary locally for static analysis:
 
@@ -45,7 +44,6 @@ Then I copied the binary locally for static analysis:
 scp -P <PORT> ctf-player@dolphin-cove.picoctf.net:/home/ctf-player/* .
 ```
 
-![Copying the binary locally](assets/terminal1\(1\).png)
 
 ---
 
@@ -59,7 +57,7 @@ strings -a ad7e550b | grep -iE "usage|correct|incorrect|flag|sleep|pico|ctf"
 checksec --file=ad7e550b
 ```
 
-![Basic recon](assets/recon\(8\).png)
+![Basic recon](assets/recon.png)
 
 Important findings:
 
@@ -292,6 +290,8 @@ After the loop, it checks that `argv[1][33]` is the null terminator, meaning the
 
 ---
 
+![Data table](assets/recon4.png)
+
 ## Extracting the Permutation Table
 
 The table at `0x4020` is stored in `.data`.
@@ -300,7 +300,7 @@ The table at `0x4020` is stored in `.data`.
 objdump -s -j .data ad7e550b
 ```
 
-![Data table](assets/recon4.png)
+![Data table](assets/recon5.png)
 
 The values are 4-byte little-endian integers.
 
@@ -327,9 +327,9 @@ To list all character checks, I searched for byte comparisons:
 grep -n "cmp    BYTE PTR \[rbp-0x4\]" disasm.txt
 ```
 
-![Checker values part 1](assets/recon5.png)
+![Checker values part 1](assets/recon6.png)
 
-![Checker values part 2](assets/recon6\(1\).png)
+![Checker values part 2](assets/recon7.png)
 
 The checker functions compare input bytes against these hexadecimal ASCII values:
 
@@ -344,7 +344,7 @@ The checker functions compare input bytes against these hexadecimal ASCII values
 
 I confirmed the conversion using CyberChef:
 
-![CyberChef conversion](assets/cyberchef\(5\).png)
+![CyberChef conversion](assets/cyberchef.png)
 
 The resulting charset is:
 
@@ -380,10 +380,15 @@ I checked the relocation tables:
 ```bash
 readelf -r ad7e550b
 objdump -R ad7e550b
+```
+
+![Relocations and references](assets/terminal.png)
+
+```bash
 grep -nE "4020|4120|40c0|40e0" disasm.txt
 ```
 
-![Relocations and references](assets/script1.png)
+![Grep](assets/terminal1.png)
 
 The table at `0x4020` is visible in `.data`, but the table at `0x4120` is not statically initialized through normal relocations.
 
@@ -452,7 +457,7 @@ finally:
 EOF
 ```
 
-![Runtime dump script](assets/recon7\(1\).png)
+![Runtime dump script](assets/script.png)
 
 The script:
 
@@ -464,7 +469,7 @@ The script:
 
 The output:
 
-![Runtime dump output](assets/output\(1\).png)
+![Runtime dump output](assets/output.png)
 
 Example:
 
@@ -491,7 +496,7 @@ static_offset = runtime_pointer - PIE_base
 
 At first, reading the runtime table at one moment produced random-looking candidates. I wrote a calibration script to repeatedly dump the runtime table over time.
 
-![Calibration script](assets/script.png)
+![Calibration script](assets/script1.png)
 
 The important part:
 
@@ -538,7 +543,7 @@ So every runtime snapshot leaks one correct flag character at the matching index
 
 The final exploit repeatedly reads the runtime table at `base + 0x4120`, builds a candidate string, then appends `candidate[pos]` to the recovered flag.
 
-![Final exploit script](assets/exploit\(8\).png)
+![Final exploit script](assets/exploit.png)
 
 The key idea is:
 
@@ -675,7 +680,7 @@ picoCTF{Unknown}
 ```
 
 ---
-
+PWNED 
 ## Key Takeaways
 
 * The binary is stripped and PIE-enabled.
@@ -700,4 +705,7 @@ By dumping the runtime table repeatedly and observing the timing pattern, each s
 The final reconstructed flag is:
 
 ```text
-picoCTF{redacted
+picoCTF{redacted}
+
+
+PWNED
