@@ -15,7 +15,7 @@ The goal is to reconstruct the original transferred file from the PCAP, then ope
 The challenge hints tell us that the encoding script is important, and that we should focus on what happens to each byte before it is sent.
 
 ---
-
+![Challenge](assets/challenge.png)
 ## Files Provided
 
 The challenge provides two files:
