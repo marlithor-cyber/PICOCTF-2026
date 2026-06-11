@@ -320,8 +320,7 @@ After decrypting the Fernet token, the flag was recovered.
 ## Flag
 
 ```text
-picoCTF{tr4ck_th3_tr4ff1c_c1f1c1d9}
-```
+picoCTF{...redacted...
 
 ---
 
