@@ -247,7 +247,7 @@ I opened the valid hidden profile using the discovered hash:
 ```http
 GET /profile/user/5a01f0597ac4bdf35c24846734ee9a76 HTTP/1.1
 ```
-![Admin profile flag](assets/hashed.png)
+![Admin profile flag](assets/admin.png)
 The server responded with the admin profile:
 
 ```text
