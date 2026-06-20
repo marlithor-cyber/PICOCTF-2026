@@ -317,5 +317,5 @@ base64
 ## Final Flag
 
 ```text
-picoCTF{573417h13r_7h4n_7h3_1457_58527bb222}
+picoCTF{use_your_br4in}
 ```
