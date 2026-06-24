@@ -31,7 +31,7 @@ I started by inspecting the Flask application:
 cat app.py
 ```
 
-![Application analysis](assets/app_analysis.png)
+![Application analysis](assets/aapp_analysis.png)
 
 The first important part is the rate-limit key:
 
